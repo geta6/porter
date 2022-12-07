@@ -4,6 +4,7 @@
 
 # Cache
 tmp
+.next
 
 # Environment
 .env*

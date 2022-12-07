@@ -10,9 +10,20 @@
   "scripts": {
     "dev": "scripty",
     "test": "scripty",
+    "start": "scripty",
     "precommit": "scripty",
     "postinstall": "scripty"
   },
+  "apps": [
+    {
+      "name": "porter",
+      "script": "yarn",
+      "args": "start",
+      "interpreter": "bash",
+      "watch": false,
+      "instances": 1
+    }
+  ],
   "scripty": {
     "silent": true
   },
