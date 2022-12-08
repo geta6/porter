@@ -95,7 +95,11 @@ export class NotionUtil {
     })();
     const title = (() => {
       if (error) {
-        return `Error: ${error.code}`;
+        if (error.code === 'object_not_found') {
+          return `ページが見つかりませんでした`;
+        } else {
+          return `Error: ${error.code}`;
+        }
       } else if (page) {
         const { title } = Object.values(page.properties).find((prop) => prop.type === 'title') as {
           title: Array<RichTextItemResponse>;
