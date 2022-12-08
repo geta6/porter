@@ -113,7 +113,7 @@ export class NotionUtil {
     })();
     const summary = (() => {
       if (error) {
-        return error.message;
+        return null;
       } else if (comment) {
         return comment[0].rich_text
           .map(({ plain_text }) => plain_text)
