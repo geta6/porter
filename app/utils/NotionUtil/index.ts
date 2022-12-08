@@ -24,13 +24,19 @@ export type RetrieveTarget = {
 };
 
 export type RetrieveResponse = {
-  retrieved?: 'block' | 'page' | 'comment' | 'database';
+  retrieved?: 'block' | 'page' | 'comment' | 'database' | 'error';
   user?: UserObjectResponse;
   block?: BlockObjectResponse;
   page?: PageObjectResponse;
   comment?: CommentObjectResponse[];
   database?: DatabaseObjectResponse;
   children?: ListBlockChildrenResponse;
+  error?: {
+    name: string;
+    code: string;
+    status: number;
+    message: string;
+  };
 };
 
 export type UnfurlObject = {
@@ -59,11 +65,10 @@ export class NotionUtil {
   };
 
   static toUnfurl = async (retrieves: RetrieveResponse): Promise<UnfurlObject> => {
-    const { page, database, comment, block, children } = retrieves;
-    // if (user) {
+    const { page, database, comment, block, children, error } = retrieves;
     const target = page ? page : database ? database : undefined;
-    if (target) {
-      const icon = (() => {
+    const icon = (() => {
+      if (!error && target) {
         if (target.icon?.type === 'file') {
           return target.icon.file.url;
         } else if (target.icon?.type === 'emoji') {
@@ -71,82 +76,83 @@ export class NotionUtil {
             .map((c: string) => c.codePointAt(0)?.toString(16))
             .join('-');
           return `https://a.slack-edge.com/production-standard-emoji-assets/14.0/apple-large/${code}@2x.png`;
-        } else {
-          return 'https://www.notion.so/images/favicon.ico';
         }
-      })();
-      const thumb = (() => {
+      }
+      return 'https://www.notion.so/images/favicon.ico';
+    })();
+    const thumb = (() => {
+      if (!error && target) {
         if (target.cover?.type === 'external') {
           const source = target.cover?.external.url;
           if (/^https?:\/\/images\.unsplash\.com/.test(source)) {
             return `${source}${/\?/.test(source) ? '&' : '?'}w=600`;
           }
           return source;
-        } else {
-          return target.cover?.file.url;
         }
-      })();
-      const summary = (() => {
-        if (comment) {
-          return comment[0].rich_text
-            .map(({ plain_text }) => plain_text)
-            .join('')
-            .replace(/\n/g, ' ');
-        } else if (block) {
-          // @ts-ignore
-          return block[block.type].rich_text[0].plain_text;
-        } else if (page) {
-          return children?.results
-            .map((result) => {
-              // @ts-ignore
-              const texts = result[result.type].rich_text;
-              return Array.isArray(texts) ? texts.map((t) => t.plain_text.trim()).join(' ') : '';
-            })
-            .join(' ')
-            .replace(/\n/g, '');
-        } else if (database) {
-          return database.description
-            .map((t) => t.plain_text.trim())
-            .join(' ')
-            .replace(/\n/g, '');
-        } else {
-          return '';
-        }
-      })();
-      const title = (() => {
-        if (page) {
-          const { title } = Object.values(page.properties).find((prop) => prop.type === 'title') as {
-            title: Array<RichTextItemResponse>;
-          };
-          return title.length > 0 ? title.map(({ plain_text }) => plain_text).join('') : 'Untitled';
-        } else if (database) {
-          const { title } = database;
-          return title.length > 0 ? title.map(({ plain_text }) => plain_text).join('') : 'Untitled';
-        } else {
-          return 'Untitled';
-        }
-      })();
-      return {
-        color: '#000000',
-        author_icon: icon,
-        author_name: 'notion.so',
-        author_link: target.url,
-        title: title,
-        title_link: target.url,
-        thumb_url: thumb,
-        fields: [
-          {
-            value: summary ? (summary.length > 130 ? `${summary.slice(0, 127)}...` : summary) : '',
-            short: false,
-          },
-        ],
-        // footer: `Created by ${user.name}`,
-        // footer_icon: user.avatar_url ? user.avatar_url : undefined,
-        ts: +new Date(target.created_time),
-      };
-    }
-    // }
-    return {};
+        return target.cover?.file.url;
+      }
+      return undefined;
+    })();
+    const title = (() => {
+      if (error) {
+        return `Error: ${error.code}`;
+      } else if (page) {
+        const { title } = Object.values(page.properties).find((prop) => prop.type === 'title') as {
+          title: Array<RichTextItemResponse>;
+        };
+        return title.length > 0 ? title.map(({ plain_text }) => plain_text).join('') : 'Untitled';
+      } else if (database) {
+        const { title } = database;
+        return title.length > 0 ? title.map(({ plain_text }) => plain_text).join('') : 'Untitled';
+      }
+      return 'Untitled';
+    })();
+    const summary = (() => {
+      if (error) {
+        return error.message;
+      } else if (comment) {
+        return comment[0].rich_text
+          .map(({ plain_text }) => plain_text)
+          .join('')
+          .replace(/\n/g, ' ');
+      } else if (block) {
+        // @ts-ignore
+        return block[block.type].rich_text[0].plain_text;
+      } else if (page) {
+        return children?.results
+          .map((result) => {
+            // @ts-ignore
+            const texts = result[result.type].rich_text;
+            return Array.isArray(texts) ? texts.map((t) => t.plain_text.trim()).join(' ') : '';
+          })
+          .join(' ')
+          .replace(/\n/g, '');
+      } else if (database) {
+        return database.description
+          .map((t) => t.plain_text.trim())
+          .join(' ')
+          .replace(/\n/g, '');
+      }
+      return '';
+    })();
+    return {
+      color: '#000000',
+      author_icon: icon,
+      author_name: 'notion.so',
+      author_link: target ? target.url : undefined,
+      title: title,
+      title_link: target ? target.url : 'https://www.notion.so/pixiv/Notion-bb8de7f5779a4661bf8890bd0d4f9169',
+      thumb_url: thumb,
+      fields: [
+        {
+          value: summary ? (summary.length > 130 ? `${summary.slice(0, 127)}...` : summary) : '',
+          short: false,
+        },
+      ],
+      // footer: `Created by ${user.name}`,
+      // footer_icon: user.avatar_url ? user.avatar_url : undefined,
+      ts: +new Date(target ? target.created_time : Date.now()),
+    };
   };
 
   private notion: NotionClient;
@@ -159,36 +165,44 @@ export class NotionUtil {
     const { pageId, commentId, blockId } = NotionUtil.toRetrieve(url);
     const res: RetrieveResponse = {};
 
-    // @ts-ignore
-    const block: BlockObjectResponse = await this.notion.blocks.retrieve({ block_id: pageId });
+    try {
+      const block = (await this.notion.blocks.retrieve({ block_id: pageId })) as BlockObjectResponse;
 
-    if (block.type === 'child_page') {
-      // @ts-ignore
-      res.page = await this.notion.pages.retrieve({ page_id: pageId });
-      if (res.page) {
-        res.children = await this.notion.blocks.children.list({ block_id: pageId });
+      if (block.type === 'child_page') {
+        res.page = (await this.notion.pages.retrieve({ page_id: pageId })) as PageObjectResponse;
+        if (res.page) {
+          res.children = await this.notion.blocks.children.list({ block_id: pageId });
+        }
+        res.retrieved = 'page';
       }
-      res.retrieved = 'page';
-    }
 
-    if (block.type === 'child_database') {
-      // @ts-ignore
-      res.database = await this.notion.databases.retrieve({ database_id: pageId });
-      res.retrieved = 'database';
-    }
+      if (block.type === 'child_database') {
+        res.database = (await this.notion.databases.retrieve({ database_id: pageId })) as DatabaseObjectResponse;
+        res.retrieved = 'database';
+      }
 
-    if (blockId) {
-      // @ts-ignore
-      res.block = await this.notion.blocks.retrieve({ block_id: blockId });
-      res.retrieved = 'block';
-    }
+      if (blockId) {
+        res.block = (await this.notion.blocks.retrieve({ block_id: blockId })) as BlockObjectResponse;
+        res.retrieved = 'block';
+      }
 
-    if (commentId) {
-      const comment = await this.notion.comments.list({ block_id: blockId || pageId });
-      res.comment = comment.results.filter((c) => c.discussion_id === commentId);
-      res.retrieved = 'comment';
+      if (commentId) {
+        const comment = await this.notion.comments.list({ block_id: blockId || pageId });
+        res.comment = comment.results.filter((c) => c.discussion_id === commentId);
+        res.retrieved = 'comment';
+      }
+    } catch (e) {
+      if (e !== null && typeof e === 'object' && Object.hasOwn(e, 'code')) {
+        const error = e as { name: string; code: string; status: number; body: Object; message: string };
+        res.error = {
+          name: error.name,
+          code: error.code,
+          status: error.status,
+          message: error.message,
+        };
+      }
+      res.retrieved = 'error';
     }
-
     return res;
   };
 
