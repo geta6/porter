@@ -66,41 +66,33 @@ export class NotionUtil {
 
   static toUnfurl = async (retrieves: RetrieveResponse): Promise<UnfurlObject> => {
     const { page, database, comment, block, children, error } = retrieves;
+    if (error) return {};
     const target = page ? page : database ? database : undefined;
+    if (!target) return {};
+
     const icon = (() => {
-      if (!error && target) {
-        if (target.icon?.type === 'file') {
-          return target.icon.file.url;
-        } else if (target.icon?.type === 'emoji') {
-          const code = Array.from(target.icon.emoji)
-            .map((c: string) => c.codePointAt(0)?.toString(16))
-            .join('-');
-          return `https://a.slack-edge.com/production-standard-emoji-assets/14.0/apple-large/${code}@2x.png`;
-        }
+      if (target.icon?.type === 'file') {
+        return target.icon.file.url;
+      } else if (target.icon?.type === 'emoji') {
+        const code = Array.from(target.icon.emoji)
+          .map((c: string) => c.codePointAt(0)?.toString(16))
+          .join('-');
+        return `https://a.slack-edge.com/production-standard-emoji-assets/14.0/apple-large/${code}@2x.png`;
       }
       return 'https://www.notion.so/images/favicon.ico';
     })();
     const thumb = (() => {
-      if (!error && target) {
-        if (target.cover?.type === 'external') {
-          const source = target.cover?.external.url;
-          if (/^https?:\/\/images\.unsplash\.com/.test(source)) {
-            return `${source}${/\?/.test(source) ? '&' : '?'}w=600`;
-          }
-          return source;
+      if (target.cover?.type === 'external') {
+        const source = target.cover?.external.url;
+        if (/^https?:\/\/images\.unsplash\.com/.test(source)) {
+          return `${source}${/\?/.test(source) ? '&' : '?'}w=600`;
         }
-        return target.cover?.file.url;
+        return source;
       }
-      return undefined;
+      return target.cover?.file.url;
     })();
     const title = (() => {
-      if (error) {
-        if (error.code === 'object_not_found') {
-          return `ページが見つかりませんでした`;
-        } else {
-          return `Error: ${error.code}`;
-        }
-      } else if (page) {
+      if (page) {
         const { title } = Object.values(page.properties).find((prop) => prop.type === 'title') as {
           title: Array<RichTextItemResponse>;
         };
@@ -112,9 +104,7 @@ export class NotionUtil {
       return 'Untitled';
     })();
     const summary = (() => {
-      if (error) {
-        return null;
-      } else if (comment) {
+      if (comment) {
         return comment[0].rich_text
           .map(({ plain_text }) => plain_text)
           .join('')
@@ -143,9 +133,9 @@ export class NotionUtil {
       color: '#000000',
       author_icon: icon,
       author_name: 'notion.so',
-      author_link: target ? target.url : undefined,
+      author_link: target.url,
       title: title,
-      title_link: target ? target.url : 'https://www.notion.so/pixiv/Notion-bb8de7f5779a4661bf8890bd0d4f9169',
+      title_link: target.url,
       thumb_url: thumb,
       fields: [
         {
@@ -155,7 +145,7 @@ export class NotionUtil {
       ],
       // footer: `Created by ${user.name}`,
       // footer_icon: user.avatar_url ? user.avatar_url : undefined,
-      ts: +new Date(target ? target.created_time : Date.now()),
+      ts: +new Date(target.created_time),
     };
   };
 
