@@ -143,8 +143,8 @@ export class NotionUtil {
           short: false,
         },
       ],
-      // footer: `Created by ${user.name}`,
-      // footer_icon: user.avatar_url ? user.avatar_url : undefined,
+      footer: `<${target.url.replace(/^https?/, 'notion')}|Open in notion app>`,
+      footer_icon: 'https://www.notion.so/images/favicon.ico',
       ts: +new Date(target.created_time),
     };
   };
