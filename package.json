@@ -11,6 +11,7 @@
     "dev": "scripty",
     "test": "scripty",
     "start": "scripty",
+    "build": "scripty",
     "precommit": "scripty",
     "postinstall": "scripty"
   },
