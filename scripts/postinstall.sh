@@ -1,17 +1,16 @@
 #!/bin/bash
 
 set -eu
-BASEDIR=$(dirname $0)
 
-if [ ! -h "${BASEDIR}/../.git/hooks/pre-commit" ]; then
-  ln -sf "${BASEDIR}/precommit.sh" "${BASEDIR}/../.git/hooks/pre-commit"
+if [ ! -h ".git/hooks/pre-commit" ]; then
+  ln -sf "scripts/precommit.sh" ".git/hooks/pre-commit"
 fi
 
-if [ ! -f "${BASEDIR}/../.envrc" -a -x "`which direnv`" ]; then
-  echo 'export PATH="$(npm bin):$PATH"' > "${BASEDIR}/../.envrc"
+if [ ! -f ".envrc" -a -x "`which direnv`" ]; then
+  echo 'export PATH="$(npm bin):$PATH"' > ".envrc"
   direnv allow
 fi
 
-if [ ! -f "${BASEDIR}/../app/.env.local" ]; then
-  cp -v "${BASEDIR}/../.env.example" "${BASEDIR}/../app/.env.local"
+if [ ! -f ".env.local" ]; then
+  cp -v ".env.example" ".env.local"
 fi

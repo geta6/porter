@@ -8,23 +8,13 @@
   "author": "geta6 <getakura@gmail.com>",
   "license": "MIT",
   "scripts": {
+    "build": "next build",
+    "start": "yarn build && next start",
+    "test": "jest $@",
     "dev": "scripty",
-    "test": "scripty",
-    "start": "scripty",
-    "build": "scripty",
     "precommit": "scripty",
     "postinstall": "scripty"
   },
-  "apps": [
-    {
-      "name": "porter",
-      "script": "yarn",
-      "args": "start",
-      "interpreter": "bash",
-      "watch": false,
-      "instances": 1
-    }
-  ],
   "scripty": {
     "silent": true
   },
@@ -71,7 +61,6 @@
     "ioredis": "^5.2.4",
     "next": "^13.0.6",
     "node-fetch": "^3.3.0",
-    "pm2": "^5.2.2",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "scripty": "^2.1.1"
@@ -86,6 +75,7 @@
     "@typescript-eslint/eslint-plugin": "^5.45.1",
     "@typescript-eslint/parser": "^5.45.1",
     "eslint": "^8.29.0",
+    "eslint-config-next": "^13.0.6",
     "eslint-config-prettier": "^8.5.0",
     "eslint-plugin-import": "^2.26.0",
     "eslint-plugin-prettier": "^4.2.1",
