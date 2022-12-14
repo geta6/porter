@@ -10,6 +10,8 @@
     "no-alert": 2,
     "no-console": 1,
     "no-debugger": 2,
+    "no-unused-vars": 1,
+    "no-irregular-whitespace": 0,
     "@next/next/no-img-element": 0
   }
 }

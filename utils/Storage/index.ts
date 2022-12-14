@@ -10,12 +10,12 @@ export class Storage {
   }
 
   get = async (id: string) => {
-    const key = Storage.key(`notion:${id}`);
+    const key = Storage.key(id);
     return JSON.parse((await this.redis.get(key)) || 'null');
   };
 
   put = async (id: string, data: { [key: string]: any }, expire?: Date | null) => {
-    const key = Storage.key(`notion:${id}`);
+    const key = Storage.key(id);
     // default: expire after 30min
     const date = ((now) => expire || new Date(now.setMinutes(now.getMinutes() + 30)))(new Date());
     const sec = Math.floor((Number(date) - Number(new Date())) / 1000);
