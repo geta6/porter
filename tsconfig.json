@@ -26,14 +26,13 @@
     "resolveJsonModule": true,
     "incremental": true
   },
-  "exclude": [
-    "node_modules",
-    "**/*.spec.ts",
-    "tmp"
-  ],
   "include": [
     "next-env.d.ts",
     "**/*.ts",
     "**/*.tsx"
+  ],
+  "exclude": [
+    "node_modules",
+    "tmp"
   ]
 }

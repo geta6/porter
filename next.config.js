@@ -1,9 +1,8 @@
 // @ts-check
 
-const path = require('path');
-
-process.env.NODE_ENV ||= 'development';
-
+/**
+ * @type {import('next').NextConfig}
+ **/
 const nextConfig = {
   // https://nextjs.org/docs#changing-x-powered-by
   poweredByHeader: false,

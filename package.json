@@ -10,7 +10,7 @@
   "scripts": {
     "build": "next build",
     "start": "yarn build && next start",
-    "test": "jest $@",
+    "test": "next lint && jest $@",
     "dev": "scripty",
     "precommit": "scripty",
     "postinstall": "scripty"
@@ -35,24 +35,6 @@
     "*.json": [
       "jsonlint",
       "prettier --write"
-    ]
-  },
-  "jest": {
-    "rootDir": "./app",
-    "testRegex": ".*__tests__/.+\\.(test|spec)\\.tsx?$",
-    "bail": false,
-    "verbose": false,
-    "fakeTimers": {
-      "timerLimit": 1000
-    },
-    "cacheDirectory": "<rootDir>/../tmp/jest",
-    "coverageDirectory": "<rootDir>/../tmp/coverage",
-    "collectCoverageFrom": [
-      "<rootDir>/**/*.{ts,tsx,js,jsx}"
-    ],
-    "watchPathIgnorePatterns": [
-      "<rootDir>/node_modules/",
-      "<rootDir>/tmp/"
     ]
   },
   "dependencies": {
